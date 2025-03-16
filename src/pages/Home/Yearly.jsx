@@ -4,70 +4,9 @@ import { IoClose } from "react-icons/io5";
 import { IoChevronDown } from "react-icons/io5";
 import InterviewModal from "./DetailModal";
 import { formatDateTime } from "../../utlis/dateFormat";
+import { interviewData } from "./data";
 
-const interviewData = [
-  {
-    id: 1,
-    summary: "1st Round",
-    interviewer: "Karan",
-    start: "2025-03-10T00:01:00+05:30",
-    end: "2025-03-12T01:40:00+05:30",
-    link: "http://www.hhh.com",
-    user_det: [
-      {
-        id: 1,
-        candidate: {
-          candidate_firstName: "Juni",
-          candidate_lastName: "Kin",
-        },
-        handled_by: {
-          firstName: "Prin",
-        },
-        job_id: {
-          jobRequest_Title: "Node Developer",
-        },
-      },
-      {
-        id: 2,
-        candidate: {
-          candidate_firstName: "Juni",
-          candidate_lastName: "Kin",
-        },
-        handled_by: {
-          firstName: "Prin",
-        },
-        job_id: {
-          jobRequest_Title: "Next Developer",
-        },
-      },
-    ],
-  },
-  {
-    id: 2,
-    summary: "2nd Round",
-    interviewer: "Ravi",
-    start: "2025-03-16T18:00:00+05:30",
-    end: "2025-03-16T20:40:00+05:30",
-    link: "http://www.hhh.com",
-    user_det: [
-      {
-        id: 1,
-        candidate: {
-          candidate_firstName: "mohan",
-          candidate_lastName: "raj",
-        },
-        handled_by: {
-          firstName: "Vinodhini",
-        },
-        job_id: {
-          jobRequest_Title: "Django Developer",
-        },
-      },
-    ],
-  },
-];
-
-const YearlyCalendar = ({ currentDate }) => {
+const YearlyCalendar = ({ currentDate, localStorageData }) => {
   const [calendarMonths, setCalendarMonths] = useState([]);
   const [selectedDate, setSelectedDate] = useState(null);
   const [modalData, setModalData] = useState([]);
@@ -77,12 +16,17 @@ const YearlyCalendar = ({ currentDate }) => {
 
   useEffect(() => {
     generateYearMonths();
-  }, [currentDate, interviewData]);
+  }, [currentDate, interviewData, localStorageData]);
 
   const generateYearMonths = () => {
     const currentYear = dayjs(currentDate).year();
 
-    const interviewDates = interviewData.flatMap((interview) => {
+    const dataSource =
+      Array.isArray(localStorageData) && localStorageData.length > 0
+        ? localStorageData
+        : interviewData;
+
+    const interviewDates = dataSource?.flatMap((interview) => {
       const startDate = dayjs(interview.start);
       const endDate = dayjs(interview.end);
       const dates = [];
@@ -129,8 +73,13 @@ const YearlyCalendar = ({ currentDate }) => {
   const handleDayClick = (day) => {
     if (day?.isHighlighted) {
       setSelectedDate(day.date);
+
+      const dataSource =
+        Array.isArray(localStorageData) && localStorageData.length > 0
+          ? localStorageData
+          : interviewData;
       setModalData(
-        interviewData.filter(({ start, end }) =>
+        dataSource?.filter(({ start, end }) =>
           dayjs(day.date).isBetween(dayjs(start), dayjs(end), "day", "[]")
         )
       );
@@ -144,14 +93,6 @@ const YearlyCalendar = ({ currentDate }) => {
 
   const toggleInterview = (id) => {
     setExpandedId(expandedId === id ? null : id);
-  };
-
-  const handleInterviewClick = (interviewId) => {
-    const interviewDetails = interviewData.find(
-      (interview) => interview.id === interviewId
-    );
-    // Store or log interview details as needed
-    console.log("Clicked Interview Details:", interviewDetails);
   };
 
   const { formattedDate, startTime, endTime } = formatDateTime(

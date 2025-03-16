@@ -7,8 +7,9 @@ import InterviewModal from "./DetailModal";
 import { formatDateTime } from "../../utlis/dateFormat";
 import { Popover } from "./Popover";
 import dayjs from "dayjs";
+import { interviewData } from "./data";
 
-const DailySchedule = () => {
+const DailySchedule = ({ currentDate, localStorageData }) => {
   const [timeSlots, setTimeSlots] = useState([]);
 
   useEffect(() => {
@@ -30,70 +31,6 @@ const DailySchedule = () => {
     generateTimeSlots();
   }, []);
 
-  const interviewData = [
-    {
-      id: 1,
-      summary: "1st Round",
-      title: "Node.js Engineer",
-      interviewer: "Karan",
-      start: "2025-03-10T00:01:00+05:30",
-      end: "2025-03-12T01:40:00+05:30",
-      link: "http://www.hhh.com",
-      user_det: [
-        {
-          id: 1,
-          candidate: {
-            candidate_firstName: "Juni",
-            candidate_lastName: "Kin",
-          },
-          handled_by: {
-            firstName: "Prin",
-          },
-          job_id: {
-            jobRequest_Title: "Node Developer",
-          },
-        },
-      ],
-    },
-    {
-      id: 2,
-      summary: "2nd Round",
-      title: "Next.js Engineer",
-      interviewer: "Ravi",
-      start: "2025-03-16T18:00:00+05:30",
-      end: "2025-03-16T20:40:00+05:30",
-      link: "http://www.hhh.com",
-      user_det: [
-        {
-          id: 1,
-          candidate: {
-            candidate_firstName: "Mohan",
-            candidate_lastName: "Raj",
-          },
-          handled_by: {
-            firstName: "Vinodhini",
-          },
-          job_id: {
-            jobRequest_Title: "Django Developer",
-          },
-        },
-        {
-          id: 2,
-          candidate: {
-            candidate_firstName: "Test",
-            candidate_lastName: "Here",
-          },
-          handled_by: {
-            firstName: "Kiruba",
-          },
-          job_id: {
-            jobRequest_Title: "Django Developer",
-          },
-        },
-      ],
-    },
-  ];
-
   const [showPopups, setShowPopups] = useState({});
   const [selectedInterview, setSelectedInterview] = useState(null);
   const [showModal, setShowModal] = useState(false);
@@ -111,24 +48,40 @@ const DailySchedule = () => {
   };
 
   const getInterviewsForSlot = (time) => {
+    const currentDateFormatted = dayjs(currentDate).format("YYYY-MM-DD");
+
+    // Parse slot time (e.g., "08:00 AM" → 8)
     const currentHour = parseTime(time);
 
-    return interviewData.filter(({ start, end }) => {
-      const startTime = new Date(start);
-      const endTime = new Date(end);
+    const dataSource =
+      Array.isArray(localStorageData) && localStorageData?.length > 0
+        ? localStorageData
+        : interviewData;
 
-      const interviewStartHour =
-        startTime.getHours() + startTime.getMinutes() / 60;
-      const interviewEndHour = endTime.getHours() + endTime.getMinutes() / 60;
+    return dataSource?.filter(({ start, end }) => {
+      const startTime = dayjs(start);
+      const endTime = dayjs(end);
 
-      if (interviewEndHour < interviewStartHour) {
-        return (
-          currentHour >= interviewStartHour || currentHour < interviewEndHour
-        );
-      }
+      const interviewStartDate = startTime.format("YYYY-MM-DD");
+      const interviewEndDate = endTime.format("YYYY-MM-DD");
 
+      console.log(
+        currentHour,
+        startTime.hour(),
+        endTime.hour(),
+        interviewStartDate, currentDateFormatted,
+          interviewEndDate,
+        currentHour == startTime.hour() &&
+        currentHour == endTime.hour(),
+        "endTime.hour()"
+      );
+
+      // Ensure interviews are on the selected date and time range
       return (
-        currentHour >= interviewStartHour && currentHour < interviewEndHour
+        (interviewStartDate == currentDateFormatted ||
+          interviewEndDate == currentDateFormatted) &&
+        currentHour == startTime.hour() &&
+        currentHour == endTime.hour()
       );
     });
   };
@@ -155,111 +108,119 @@ const DailySchedule = () => {
             </div>
 
             <div className="w-4/5 h-full flex items-center border-r relative">
-              {getInterviewsForSlot(time).map((interview, idx) => (
-                <div
-                  key={interview.id}
-                  className="ms-6 relative popup-container"
-                  // onClick={() => togglePopup(interview.id)}
-                >
-                  <Popover
-                    key={interview.id}
-                    position="right"
-                    content={
-                      <div>
-                        {interview?.user_det?.map((data) => {
-                          const { formattedDate, startTime, endTime } =
-                            formatDateTime(interview?.start, interview?.end);
+              {getInterviewsForSlot(time).map(
+                (interview, idx) => (
+                  console.log(interview, "interview22222"),
+                  (
+                    <div
+                      key={interview.id}
+                      className="ms-6 relative popup-container"
+                    >
+                      <Popover
+                        key={interview.id}
+                        position="right"
+                        content={
+                          <div>
+                            {interview?.user_det?.map((data) => {
+                              const { formattedDate, startTime, endTime } =
+                                formatDateTime(
+                                  interview?.start,
+                                  interview?.end
+                                );
 
-                          let props_data = {
-                            detail: data,
-                            date: formattedDate,
-                            startTime: startTime,
-                            endTime: endTime,
-                            link: interview?.link,
-                          };
-                          return (
-                            <div
-                              key={data.id}
-                              className="w-55 ps-3 py-3 pe-2 border shadow-md bg-white rounded-lg relative cursor-pointer"
-                              onClick={() => {
-                                setSelectedInterview(props_data);
-                                setIsOpen(true);
-                              }}
-                            >
-                              <div className="absolute left-0 top-0 h-full w-[10px] bg-blue-500" />
-                              <div className="flex justify-between items-center mb-2">
-                                <h4 className="text-sm font-semibold text-black mb-0">
-                                  {data.job_id.jobRequest_Title}
-                                </h4>
-                                <div className="flex items-center">
-                                  <RiEdit2Fill
-                                    size={18}
-                                    cursor="pointer"
-                                    color="black"
-                                  />
-                                  <MdOutlineDeleteOutline
-                                    className="ms-2"
-                                    size={18}
-                                    cursor="pointer"
-                                    color="red"
-                                  />
+                              let props_data = {
+                                detail: data,
+                                date: formattedDate,
+                                startTime: startTime,
+                                endTime: endTime,
+                                link: interview?.link,
+                              };
+                              return (
+                                <div
+                                  key={data.id}
+                                  className="w-55 ps-3 py-3 pe-2 border shadow-md bg-white rounded-lg relative cursor-pointer"
+                                  onClick={() => {
+                                    setSelectedInterview(props_data);
+                                    setIsOpen(true);
+                                  }}
+                                >
+                                  <div className="absolute left-0 top-0 h-full w-[10px] bg-blue-500" />
+                                  <div className="flex justify-between items-center mb-2">
+                                    <h4 className="text-sm font-semibold text-black mb-0">
+                                      {data.job_id.jobRequest_Title}
+                                    </h4>
+                                    <div className="flex items-center">
+                                      <RiEdit2Fill
+                                        size={18}
+                                        cursor="pointer"
+                                        color="black"
+                                      />
+                                      <MdOutlineDeleteOutline
+                                        className="ms-2"
+                                        size={18}
+                                        cursor="pointer"
+                                        color="red"
+                                      />
+                                    </div>
+                                  </div>
+
+                                  {/* Fixed Flexbox Alignment */}
+                                  <div className="flex items-center justify-between">
+                                    <p className="text-xs text-gray-600 mb-0 truncate">
+                                      {interview?.summary}
+                                    </p>
+                                    <span className="text-xs text-gray-600 mb-0 mx-2">
+                                      |
+                                    </span>
+                                    <p className="text-xs text-gray-600 mb-0 truncate">
+                                      Interviewer: {data.handled_by.firstName}
+                                    </p>
+                                  </div>
+                                  {/* Date and Time */}
+                                  <div className="flex items-center justify-between mt-1">
+                                    <p className="text-xs text-gray-600 mb-0">
+                                      Date: {formattedDate || "N/A"}
+                                    </p>
+                                    <span className="text-xs text-gray-600 mb-0 mx-2">
+                                      |
+                                    </span>
+                                    <p className="text-xs text-gray-600 mb-0">
+                                      Time:{" "}
+                                      {startTime && endTime
+                                        ? `${startTime} - ${endTime}`
+                                        : "N/A"}
+                                    </p>
+                                  </div>
                                 </div>
-                              </div>
-
-                              {/* Fixed Flexbox Alignment */}
-                              <div className="flex items-center justify-between">
-                                <p className="text-xs text-gray-600 mb-0 truncate">
-                                  {interview?.summary}
-                                </p>
-                                <span className="text-xs text-gray-600 mb-0 mx-2">
-                                  |
-                                </span>
-                                <p className="text-xs text-gray-600 mb-0 truncate">
-                                  Interviewer: {data.handled_by.firstName}
-                                </p>
-                              </div>
-                              {/* Date and Time */}
-                              <div className="flex items-center justify-between mt-1">
-                                <p className="text-xs text-gray-600 mb-0">
-                                  Date: {formattedDate || "N/A"}
-                                </p>
-                                <span className="text-xs text-gray-600 mb-0 mx-2">
-                                  |
-                                </span>
-                                <p className="text-xs text-gray-600 mb-0">
-                                  Time:{" "}
-                                  {startTime && endTime
-                                    ? `${startTime} - ${endTime}`
-                                    : "N/A"}
-                                </p>
-                              </div>
+                              );
+                            })}
+                          </div>
+                        }
+                      >
+                        <div className="w-55 ps-3 py-1 pe-2 border shadow-md bg-white rounded-lg relative cursor-pointer mt-2 text-start">
+                          <div className="absolute left-0 top-0 h-full w-[10px] bg-blue-500" />
+                          {interview?.user_det?.length > 0 && (
+                            <div className="absolute -top-2 -right-1 h-5 w-5 rounded-full bg-[#FFA500] flex items-center justify-center text-black text-[10px] font-semibold">
+                              {interview?.user_det?.length}
                             </div>
-                          );
-                        })}
-                      </div>
-                    }
-                  >
-                    <div className="w-55 ps-3 py-1 pe-2 border shadow-md bg-white rounded-lg relative cursor-pointer mt-2 text-start">
-                      <div className="absolute left-0 top-0 h-full w-[10px] bg-blue-500" />
-                      {interview?.user_det?.length > 0 && (
-                        <div className="absolute -top-2 -right-1 h-5 w-5 rounded-full bg-[#FFA500] flex items-center justify-center text-black text-[10px] font-semibold">
-                          {interview?.user_det?.length}
+                          )}
+                          <div className="text-[12px] font-semibold mb-1">
+                            {interview?.job_id?.jobRequest_Title}
+                          </div>
+                          <div className="text-[12px] text-gray-600 mb-1">
+                            Interviewer:
+                            {interview?.user_det?.[0]?.handled_by?.firstName}
+                          </div>
+                          <div className="text-[12px] text-gray-600 mb-1">
+                            Time: {dayjs(interview.start).format("hh:mm A")} -{" "}
+                            {dayjs(interview.end).format("hh:mm A")}
+                          </div>
                         </div>
-                      )}
-                      <div className="text-[12px] font-semibold mb-1">
-                        {interview.title}
-                      </div>
-                      <div className="text-[12px] text-gray-600 mb-1">
-                        Interviewer: {interview.interviewer}
-                      </div>
-                      <div className="text-[12px] text-gray-600 mb-1">
-                        Time: {dayjs(interview.start).format("hh:mm A")} -{" "}
-                        {dayjs(interview.end).format("hh:mm A")}
-                      </div>
+                      </Popover>
                     </div>
-                  </Popover>
-                </div>
-              ))}
+                  )
+                )
+              )}
             </div>
           </li>
         ))}
@@ -275,69 +236,7 @@ const DailySchedule = () => {
               <MdClose />
             </button>
 
-            <div className="flex border-[1.5px] border-grey-500 m-2">
-              {/* Left Section */}
-              <div className="w-1/2 p-4 border-r border-gray-300">
-                <p className="text-sm mb-2">
-                  <strong>Interview With:</strong> Kiruba
-                </p>
-                <p className="text-sm mb-2">
-                  <strong>Position:</strong> React Developer
-                </p>
-                <p className="text-sm mb-2">
-                  <strong>Created By:</strong> -
-                </p>
-                <p className="text-sm mb-2">
-                  <strong>Interview Date:</strong> 29 Aug 2025
-                </p>
-                <p className="text-sm mb-2">
-                  <strong>Interview Time:</strong> 10:00 AM
-                </p>
-                <p className="text-sm mb-4">
-                  <strong>Interview Via:</strong> Google Meet
-                </p>
-
-                {/* Resume Section */}
-                <div className="border-[1.5px] border-blue-500 p-3 mb-3 rounded-md flex items-center justify-between">
-                  <span className="text-sm text-blue-500">Resume.docx</span>
-                  <div className="flex gap-3">
-                    <RiEyeFill
-                      size={20}
-                      className="text-blue-500 cursor-pointer"
-                    />
-                    <FiDownload
-                      size={20}
-                      className="text-blue-500 cursor-pointer"
-                    />
-                  </div>
-                </div>
-
-                {/* Aadhar Section */}
-                <div className="border-[1.5px] border-blue-500 p-3 rounded-md flex items-center justify-between">
-                  <span className="text-sm text-blue-500">Aadhar Card</span>
-                  <div className="flex gap-3">
-                    <RiEyeFill
-                      size={20}
-                      className="text-blue-500 cursor-pointer"
-                    />
-                    <FiDownload
-                      size={20}
-                      className="text-blue-500 cursor-pointer"
-                    />
-                  </div>
-                </div>
-              </div>
-
-              {/* Right Section */}
-              <div className="w-1/2 p-4 flex flex-col items-center justify-center">
-                <div className="border border-grey-500 rounded-md p-3 mb-6">
-                  <FaVideo size={80} className="text-blue-500" />
-                </div>
-                <button className="bg-blue-600 text-white px-6 py-2 rounded-md hover:bg-blue-700 transition">
-                  Join
-                </button>
-              </div>
-            </div>
+            {/* Modal Content */}
           </div>
         </div>
       )}

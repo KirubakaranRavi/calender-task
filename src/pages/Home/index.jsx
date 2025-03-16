@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { FaAngleRight, FaAngleLeft } from "react-icons/fa6";
 import dayjs from "dayjs";
 import { motion, AnimatePresence } from "framer-motion";
@@ -7,11 +7,13 @@ import DailySchedule from "./DailySchedule";
 import WeeklySchedule from "./WeeklySchedule";
 import MonthlyCalendar from "./Monthly";
 import YearlyCalendar from "./Yearly";
+import { interviewData } from "./data";
 
 const Index = () => {
   const [selectedView, setSelectedView] = useState("Day");
   const [currentDate, setCurrentDate] = useState(dayjs());
   const [direction, setDirection] = useState(1); // 1 for right, -1 for left
+  const [localStorageData, setLocalStorageData] = useState({});
 
   // Function to get the date suffix
   const getDateSuffix = (day) => {
@@ -87,10 +89,23 @@ const Index = () => {
     return "";
   };
 
+  const getUserPosts = () => {
+    const posts = JSON.parse(localStorage.getItem("posts")) || [];
+    const userPosts = posts.filter((post) => post.is_deleted === false);
+    console.log("User Posts:", userPosts);
+    setLocalStorageData([...interviewData, ...userPosts]);
+  };
+
+  useEffect(() => {
+    getUserPosts();
+  }, []);
+
+  console.log(localStorageData, "localStorageData");
+
   return (
     <>
       <div>
-        <Header />
+        <Header getUserPosts={getUserPosts} />
       </div>
       <div className="flex justify-between items-center w-full px-5">
         {/* Left Navigation */}
@@ -178,12 +193,33 @@ const Index = () => {
           ))}
         </div>
       </div>
-      {selectedView === "Day" && <DailySchedule />}
-      {selectedView === "Week" && <WeeklySchedule currentDate={currentDate} />}
-      {selectedView === "Month" && (
-        <MonthlyCalendar currentDate={currentDate} />
+      {selectedView === "Day" && (
+        <DailySchedule
+          currentDate={currentDate}
+          localStorageData={localStorageData}
+          getUserPosts={getUserPosts}
+        />
       )}
-      {selectedView === "Year" && <YearlyCalendar currentDate={currentDate} />}
+      {selectedView === "Week" && (
+        <WeeklySchedule
+          currentDate={currentDate}
+          localStorageData={localStorageData}
+          getUserPosts={getUserPosts}
+        />
+      )}
+      {selectedView === "Month" && (
+        <MonthlyCalendar
+          currentDate={currentDate}
+          localStorageData={localStorageData}
+          getUserPosts={getUserPosts}
+        />
+      )}
+      {selectedView === "Year" && (
+        <YearlyCalendar
+          currentDate={currentDate}
+          localStorageData={localStorageData}
+        />
+      )}
     </>
   );
 };

@@ -3,11 +3,11 @@ import { RiEdit2Fill } from "react-icons/ri";
 import { MdOutlineDeleteOutline } from "react-icons/md";
 import dayjs from "dayjs";
 import { Popover } from "./Popover";
-
 import { formatDateTime } from "../../utlis/dateFormat";
 import InterviewModal from "./DetailModal";
+import { interviewData } from "./data";
 
-const WeeklySchedule = ({ currentDate }) => {
+const WeeklySchedule = ({ currentDate, localStorageData, getUserPosts }) => {
   const [timeSlots, setTimeSlots] = useState([]);
   const [weekDays, setWeekDays] = useState([]);
   const [dates, setDates] = useState([]);
@@ -15,125 +15,6 @@ const WeeklySchedule = ({ currentDate }) => {
   const [selectedInterview, setSelectedInterview] = useState(null);
 
   const startOfWeek = currentDate.startOf("week").add(1, "day");
-
-  const interviewData = [
-    {
-      id: 1,
-      title: "React Developer",
-      interviewer: "Kiruba",
-      start: "2025-03-10T16:00:00+05:30",
-      end: "2025-03-10T16:40:00+05:30",
-    },
-    {
-      id: 2,
-      summary: "1st Round",
-      title: "Node.js Engineer",
-      interviewer: "Karan",
-      start: "2025-03-10T00:01:00+05:30",
-      end: "2025-03-10T01:40:00+05:30",
-      link: "http://www.hhh.com",
-      user_det: [
-        {
-          id: 1,
-          candidate: {
-            candidate_firstName: "Juni",
-            candidate_lastName: "Kin",
-          },
-          handled_by: {
-            firstName: "Prin",
-          },
-          job_id: {
-            jobRequest_Title: "Node Developer",
-          },
-        },
-        {
-          id: 2,
-          candidate: {
-            candidate_firstName: "Jordan",
-            candidate_lastName: "nick",
-          },
-          handled_by: {
-            firstName: "Huno",
-          },
-          job_id: {
-            jobRequest_Title: "MERN Developer",
-          },
-        },
-      ],
-    },
-    {
-      id: 3,
-      summary: "2nd Round",
-      title: "Next.js Engineer",
-      interviewer: "Ravi",
-      start: "2025-03-11T01:00:00+05:30",
-      end: "2025-03-14T02:40:00+05:30",
-      link: "http://www.hhh.com",
-      user_det: [
-        {
-          id: 1,
-          candidate: {
-            candidate_firstName: "mohan",
-            candidate_lastName: "raj",
-          },
-          handled_by: {
-            firstName: "Vinodhini",
-          },
-          job_id: {
-            jobRequest_Title: "Django Developer",
-          },
-        },
-      ],
-    },
-    {
-      id: 4,
-      summary: "3rd Round",
-      title: "Python Engineer",
-      interviewer: "Shan",
-      start: "2025-03-14T18:00:00+05:30",
-      end: "2025-03-14T20:40:00+05:30",
-      link: "http://www.hhh.com",
-      user_det: [
-        {
-          id: 1,
-          candidate: {
-            candidate_firstName: "John",
-            candidate_lastName: "Anger",
-          },
-          handled_by: {
-            firstName: "Aeger",
-          },
-          job_id: {
-            jobRequest_Title: "Java Developer",
-          },
-        },
-      ],
-    },
-    {
-      id: 5,
-      summary: "4th Round",
-      title: "C# Engineer",
-      interviewer: "Beo",
-      start: "2025-03-15T06:00:00+05:30",
-      end: "2025-03-15T08:40:00+05:30",
-      link: "http://www.hhh.com",
-      user_det: [
-        {
-          id: 1,
-          candidate: {
-            candidate_firstName: "John",
-            candidate_lastName: "Anger",
-          },
-          handled_by: {
-            firstName: "Aeger",
-          },
-          job_id: {
-            jobRequest_Title: "Java Developer",
-          },
-        },
-      ],
-    },
-  ];
 
   useEffect(() => {
     generateTimeSlots();
@@ -175,22 +56,16 @@ const WeeklySchedule = ({ currentDate }) => {
     setDates(newDates);
   };
 
-  // const isInterviewInSlot = (dayIndex, time) => {
-  //   const day = startOfWeek.clone().add(dayIndex, "day").format("YYYY-MM-DD");
-
-  //   return interviewData.filter(({ start, end }) => {
-  //     const startTime = dayjs(start);
-  //     const slotTime = parseTime(day, time);
-
-  //     return startTime.isSame(slotTime, "hour") && startTime.isSame(day, "day");
-  //   });
-  // };
-
   const isInterviewInSlot = (dayIndex, time) => {
     const day = startOfWeek.clone().add(dayIndex, "day").format("YYYY-MM-DD");
     const slotTime = parseTime(day, time);
 
-    return interviewData.filter(({ start, end }) => {
+    const dataSource =
+      Array.isArray(localStorageData) && localStorageData?.length > 0
+        ? localStorageData
+        : interviewData;
+
+    return dataSource?.filter(({ start, end }) => {
       const startTime = dayjs(start);
       const endTime = dayjs(end);
 
@@ -205,6 +80,19 @@ const WeeklySchedule = ({ currentDate }) => {
     if (period === "PM" && hour !== 12) hour += 12;
     if (period === "AM" && hour === 12) hour = 0;
     return dayjs(`${date} ${hour}:${minute}`);
+  };
+
+  const handleDelete = (id) => {
+    // Retrieve the existing data from localStorage
+
+    // Update the 'is_deleted' property for the matching item
+    const updatedData = localStorageData?.map((item) =>
+      item.id === id ? { ...item, is_deleted: true } : item
+    );
+
+    // Save the updated data back to localStorage
+    localStorage.setItem("posts", JSON.stringify(updatedData));
+    getUserPosts();
   };
 
   return (
@@ -280,6 +168,11 @@ const WeeklySchedule = ({ currentDate }) => {
                                     size={18}
                                     cursor="pointer"
                                     color="red"
+                                    onClick={(e) => {
+                                      e.preventDefault();
+                                      e.stopPropagation();
+                                      handleDelete(interview.id);
+                                    }}
                                   />
                                 </div>
                               </div>
@@ -319,14 +212,17 @@ const WeeklySchedule = ({ currentDate }) => {
                   >
                     <div className="w-55 ps-3 py-1 pe-2 border shadow-md bg-white rounded-lg relative cursor-pointer mt-2 text-start">
                       <div className="absolute left-0 top-0 h-full w-[10px] bg-blue-500" />
-                      <div className="absolute -top-2 -right-1 h-5 w-5 rounded-full bg-[#FFA500] flex items-center justify-center text-black text-[10px] font-semibold">
-                        {interview.id}
-                      </div>
+                      {interview?.user_det?.length > 0 && (
+                        <div className="absolute -top-2 -right-1 h-5 w-5 rounded-full bg-[#FFA500] flex items-center justify-center text-black text-[10px] font-semibold">
+                          {interview?.user_det?.length}
+                        </div>
+                      )}
                       <div className="text-[12px] font-semibold mb-1">
-                        {interview.title}
+                        {interview?.job_id?.jobRequest_Title}
                       </div>
                       <div className="text-[12px] text-gray-600 mb-1">
-                        Interviewer: {interview.interviewer}
+                        Interviewer:{" "}
+                        {interview?.user_det?.[0]?.handled_by?.firstName}
                       </div>
                       <div className="text-[12px] text-gray-600 mb-1">
                         Time: {dayjs(interview.start).format("hh:mm A")} -{" "}

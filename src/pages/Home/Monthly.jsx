@@ -6,65 +6,15 @@ import { formatDateTime } from "../../utlis/dateFormat";
 import { Popover } from "./Popover";
 import { RiEdit2Fill } from "react-icons/ri";
 import { MdOutlineDeleteOutline } from "react-icons/md";
+import { interviewData } from "./data";
 
 dayjs.extend(isBetween); // Add this to enable the isBetween method
 
-const MonthlyCalendar = ({ currentDate }) => {
+const MonthlyCalendar = ({ currentDate, localStorageData, getUserPosts }) => {
   const [calendarDays, setCalendarDays] = useState([]);
   const [currentMonth, setCurrentMonth] = useState(dayjs(currentDate));
   const [isOpen, setIsOpen] = useState(false);
   const [selectedInterview, setSelectedInterview] = useState(null);
-
-  const interviewData = [
-    {
-      id: 1,
-      summary: "1st Round",
-      title: "Node.js Engineer",
-      interviewer: "Karan",
-      start: "2025-03-10T00:01:00+05:30",
-      end: "2025-03-12T01:40:00+05:30",
-      link: "http://www.hhh.com",
-      user_det: [
-        {
-          id: 1,
-          candidate: {
-            candidate_firstName: "Juni",
-            candidate_lastName: "Kin",
-          },
-          handled_by: {
-            firstName: "Prin",
-          },
-          job_id: {
-            jobRequest_Title: "Node Developer",
-          },
-        },
-      ],
-    },
-    {
-      id: 2,
-      summary: "2nd Round",
-      title: "Next.js Engineer",
-      interviewer: "Ravi",
-      start: "2025-03-16T18:00:00+05:30",
-      end: "2025-03-16T20:40:00+05:30",
-      link: "http://www.hhh.com",
-      user_det: [
-        {
-          id: 1,
-          candidate: {
-            candidate_firstName: "mohan",
-            candidate_lastName: "raj",
-          },
-          handled_by: {
-            firstName: "Vinodhini",
-          },
-          job_id: {
-            jobRequest_Title: "Django Developer",
-          },
-        },
-      ],
-    },
-  ];
 
   useEffect(() => {
     setCurrentMonth(dayjs(currentDate));
@@ -99,7 +49,12 @@ const MonthlyCalendar = ({ currentDate }) => {
   };
 
   const getInterviewsForDate = (day) => {
-    return interviewData.filter((interview) => {
+    const dataSource =
+      Array.isArray(localStorageData) && localStorageData.length > 0
+        ? localStorageData
+        : interviewData;
+
+    return dataSource?.filter((interview) => {
       const interviewStart = dayjs(interview.start);
       const interviewEnd = dayjs(interview.end);
       const currentDay = currentMonth.date(day);
@@ -107,6 +62,16 @@ const MonthlyCalendar = ({ currentDate }) => {
       // Check if current day is between start and end (inclusive)
       return currentDay.isBetween(interviewStart, interviewEnd, "day", "[]");
     });
+  };
+
+  const handleDelete = (id) => {
+    const updatedData = localStorageData?.map((item) =>
+      item.id === id ? { ...item, is_deleted: true } : item
+    );
+
+    // Save the updated data back to localStorage
+    localStorage.setItem("posts", JSON.stringify(updatedData));
+    getUserPosts();
   };
 
   return (
@@ -184,6 +149,11 @@ const MonthlyCalendar = ({ currentDate }) => {
                                     size={18}
                                     cursor="pointer"
                                     color="red"
+                                    onClick={(e) => {
+                                      e.preventDefault();
+                                      e.stopPropagation();
+                                      handleDelete(interview.id);
+                                    }}
                                   />
                                 </div>
                               </div>
@@ -229,10 +199,11 @@ const MonthlyCalendar = ({ currentDate }) => {
                         </div>
                       )}
                       <div className="text-[12px] font-semibold mb-1">
-                        {interview.title}
+                        {interview?.job_id?.jobRequest_Title}
                       </div>
                       <div className="text-[12px] text-gray-600 mb-1">
-                        Interviewer: {interview.interviewer}
+                        Interviewer:{" "}
+                        {interview?.user_det?.[0]?.handled_by?.firstName}
                       </div>
                       <div className="text-[12px] text-gray-600 mb-1">
                         Time: {dayjs(interview.start).format("hh:mm A")} -{" "}
