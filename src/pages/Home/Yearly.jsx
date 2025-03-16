@@ -1,81 +1,9 @@
-// import React, { useState, useEffect } from "react";
-// import dayjs from "dayjs";
-
-// const YearlyCalendar = ({ currentDate }) => {
-//   const [calendarMonths, setCalendarMonths] = useState([]);
-
-//   useEffect(() => {
-//     generateYearMonths();
-//   }, [currentDate]);
-
-//   // Generate all months and days for the current year
-//   const generateYearMonths = () => {
-//     const currentYear = dayjs(currentDate).year(); // Ensure currentDate is a dayjs object
-
-//     const months = Array.from({ length: 12 }, (_, monthIndex) => {
-//       const startOfMonth = dayjs(`${currentYear}-${monthIndex + 1}-01`);
-//       const daysInMonth = startOfMonth.daysInMonth();
-//       const startDay = startOfMonth.day();
-
-//       const days = Array.from({ length: daysInMonth }, (_, i) => i + 1);
-
-//       // Fill days to align with the start day of the month
-//       const paddedDays = Array(startDay).fill(null).concat(days);
-
-//       // Ensure complete weeks (multiples of 7)
-//       while (paddedDays.length % 7 !== 0) {
-//         paddedDays.push(null);
-//       }
-
-//       return { month: startOfMonth.format("MMMM"), days: paddedDays };
-//     });
-
-//     setCalendarMonths(months);
-//   };
-
-//   return (
-//     <div className="p-4">
-//       <div className="grid grid-cols-3 gap-8">
-//         {calendarMonths.map(({ month, days }, monthIndex) => (
-//           <div key={monthIndex} className="border p-4 rounded-lg shadow">
-//             <h3 className="text-xl font-semibold text-center mb-4 text-blue-600">
-//               {month}
-//             </h3>
-
-//             {/* Days of the Week Header */}
-//             <div className="grid grid-cols-7 text-center font-medium mb-2">
-//               {["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"].map((day) => (
-//                 <div key={day} className="p-1 text-gray-600">
-//                   {day}
-//                 </div>
-//               ))}
-//             </div>
-
-//             {/* Calendar Days */}
-//             <div className="grid grid-cols-7 gap-1">
-//               {days.map((day, index) => (
-//                 <div
-//                   key={index}
-//                   className="flex items-center justify-center h-10 border rounded"
-//                 >
-//                   {day}
-//                 </div>
-//               ))}
-//             </div>
-//           </div>
-//         ))}
-//       </div>
-//     </div>
-//   );
-// };
-
-// export default YearlyCalendar;
-
-
 import React, { useState, useEffect } from "react";
 import dayjs from "dayjs";
 import { IoClose } from "react-icons/io5";
 import { IoChevronDown } from "react-icons/io5";
+import InterviewModal from "./DetailModal";
+import { formatDateTime } from "../../utlis/dateFormat";
 
 const interviewData = [
   {
@@ -143,6 +71,9 @@ const YearlyCalendar = ({ currentDate }) => {
   const [calendarMonths, setCalendarMonths] = useState([]);
   const [selectedDate, setSelectedDate] = useState(null);
   const [modalData, setModalData] = useState([]);
+  const [expandedId, setExpandedId] = useState(null);
+  const [isOpen, setIsOpen] = useState(false);
+  const [selectedInterview, setSelectedInterview] = useState(null);
 
   useEffect(() => {
     generateYearMonths();
@@ -211,12 +142,24 @@ const YearlyCalendar = ({ currentDate }) => {
     setModalData([]);
   };
 
-  const [expandedId, setExpandedId] = useState(null);
-
   const toggleInterview = (id) => {
     setExpandedId(expandedId === id ? null : id);
   };
 
+  const handleInterviewClick = (interviewId) => {
+    const interviewDetails = interviewData.find(
+      (interview) => interview.id === interviewId
+    );
+    // Store or log interview details as needed
+    console.log("Clicked Interview Details:", interviewDetails);
+  };
+
+  const { formattedDate, startTime, endTime } = formatDateTime(
+    modalData?.[0]?.start,
+    modalData?.[0]?.end
+  );
+
+  console.log(modalData, "modalData");
   return (
     <div className="p-4">
       <div className="grid grid-cols-3 gap-8">
@@ -255,18 +198,18 @@ const YearlyCalendar = ({ currentDate }) => {
         <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50">
           <div className="relative bg-white p-6 rounded-lg shadow-lg w-1/4">
             <IoClose
-              onClick={() => setSelectedDate(false)}
+              onClick={closeModal}
               cursor="pointer"
               color="white"
               className="absolute -top-4 -right-4 bg-blue-500 border border-gray-300 rounded-full w-8 h-8 flex items-center justify-center shadow-md"
             />
-            {modalData.map((interview) => (
+            {modalData?.[0]?.user_det?.map((interview) => (
               <div key={interview.id} className="mb-4">
                 <div
                   onClick={() => toggleInterview(interview.id)}
                   className="flex justify-between items-center cursor-pointer"
                 >
-                  <p>{interview.title}</p>
+                  <p>{interview?.job_id?.jobRequest_Title}</p>
                   <IoChevronDown
                     className={`transition-transform duration-500 ${
                       expandedId === interview.id ? "rotate-180" : ""
@@ -278,15 +221,42 @@ const YearlyCalendar = ({ currentDate }) => {
                     expandedId === interview.id ? "max-h-40" : "max-h-0"
                   }`}
                 >
-                  <p>{interview.summary}</p>
+                  <p>{modalData?.[0]?.summary}</p>
                   <p>
-                    <strong>Interviewer:</strong> {interview.interviewer}
+                    <strong>Interview With:</strong>{" "}
+                    {interview?.candidate?.candidate_firstName}
                   </p>
+                  <p>
+                    <strong>Interviewer:</strong>{" "}
+                    {interview?.handled_by?.firstName}
+                  </p>
+                  <button
+                    onClick={() => {
+                      setSelectedInterview({
+                        detail: interview,
+                        date: formattedDate,
+                        startTime: startTime,
+                        endTime: endTime,
+                        link: modalData?.[0]?.link,
+                      });
+                      setIsOpen(true);
+                    }}
+                    className="text-blue-500"
+                  >
+                    View Details
+                  </button>
                 </div>
               </div>
             ))}
           </div>
         </div>
+      )}
+      {selectedInterview && (
+        <InterviewModal
+          isOpen={isOpen}
+          closeModal={() => setIsOpen(false)}
+          interviewDetails={selectedInterview}
+        />
       )}
     </div>
   );

@@ -133,21 +133,6 @@ const DailySchedule = () => {
     });
   };
 
-  // const togglePopup = (id) => {
-  //   setShowPopups((prev) => {
-  //     const newPopups = Object.keys(prev).reduce((acc, key) => {
-  //       acc[key] = false;
-  //       return acc;
-  //     }, {});
-
-  //     // Highlight the main card when clicked
-  //     const isSelected = selectedInterview === id ? null : id;
-  //     setSelectedInterview(isSelected);
-
-  //     return { ...newPopups, [id]: !prev[id] };
-  //   });
-  // };
-
   useEffect(() => {
     const handleClickOutside = (event) => {
       if (!event.target.closest(".popup-container")) {
@@ -273,81 +258,6 @@ const DailySchedule = () => {
                       </div>
                     </div>
                   </Popover>
-                  {/* <div
-                    className={`pe-2 ps-6 py-1 border shadow-lg ${
-                      selectedInterview === interview.id
-                        ? "bg-blue-100"
-                        : "bg-white"
-                    } relative cursor-pointer`}
-                  >
-                    <div className="absolute left-0 top-0 h-full w-[10px] bg-blue-500" />
-                    <div className="absolute -top-2 -right-2 h-6 w-6 rounded-full bg-[#FFA500] flex items-center justify-center text-black text-[12px] font-semibold">
-                      {interview.id}
-                    </div>
-
-                    <h3 className="text-[14px] font-semibold mb-2">
-                      {interview.title}
-                    </h3>
-                    <p className="text-gray-600 text-[12px] mb-1">
-                      Interviewer: {interview.interviewer}
-                    </p>
-                    <p className="text-gray-600 text-[12px] mb-1">
-                      Time: {new Date(interview.start).toLocaleString()} -{" "}
-                      {new Date(interview.end).toLocaleString()}
-                    </p>
-                  </div> */}
-
-                  {/* {showPopups[interview.id] && (
-                    <div
-                      className={`absolute left-full ${
-                        idx === 0 ? "top-0" : "top-1/2"
-                      } transform -translate-y-${
-                        idx === 0 ? "0" : "1/2"
-                      } space-y-2 z-50 ms-4`}
-                    >
-                      <div
-                        onClick={openModal}
-                        className="w-60 ps-3 py-3 pe-2 border shadow-md bg-white rounded-lg relative cursor-pointer"
-                      >
-                        <div className="absolute left-0 top-0 h-full w-[10px] bg-blue-500" />
-                       
-                        <div className="flex justify-between items-center mb-2">
-                          <h4 className="text-sm font-semibold mb-0">
-                            Candidate Info
-                          </h4>
-                          <div className="flex items-center">
-                            <RiEdit2Fill size={18} cursor="pointer" />
-                            <MdOutlineDeleteOutline
-                              className="ms-2"
-                              size={18}
-                              cursor="pointer"
-                              color="red"
-                            />
-                          </div>
-                        </div>
-
-                        <div className="flex items-center">
-                          <p className="text-xs text-gray-600 mb-0 w-1/3 truncate">
-                            {interview.summary}
-                          </p>
-                          <span className="text-xs text-gray-600 mb-0 mx-2">
-                            |
-                          </span>
-                          <p className="text-xs text-gray-600 mb-0 w-2/3 text-right truncate">
-                            Interviewer: {interview.interviewer}
-                          </p>
-                        </div>
-                      </div>
-
-                      <div className="w-48 p-3 border shadow-md bg-white rounded-lg relative">
-                        <div className="absolute left-0 top-0 h-full w-[10px] bg-blue-500" />
-                        <h4 className="text-sm font-semibold mb-1">
-                          Interview Status
-                        </h4>
-                        <p className="text-xs text-gray-600">Scheduled</p>
-                      </div>
-                    </div>
-                  )} */}
                 </div>
               ))}
             </div>
