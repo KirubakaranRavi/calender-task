@@ -49,15 +49,18 @@ export const Popover = ({
         {children}
       </button>
 
-      {isOpen && (
-        <div
-          className={`absolute top-1/2 -translate-y-1/2 ${
-            position === "left" ? "right-full mr-2" : "left-full ml-2"
-          } min-w-[300px] max-w-auto bg-white border rounded-lg shadow-lg z-50`}
-        >
-          {content}
-        </div>
-      )}
+      <div
+        className={`absolute top-1/2 -translate-y-1/2 ${
+          position === "left" ? "right-full mr-2" : "left-full ml-2"
+        } min-w-[300px] max-w-auto z-50 ${
+          isOpen ? "opacity-100 visible" : "opacity-0 invisible"
+        }`}
+        style={{
+          transition: "opacity 0.3s ease, visibility 0.3s ease",
+        }}
+      >
+        {content}
+      </div>
     </div>
   );
 };

@@ -83,23 +83,18 @@ const Header = ({ getUserPosts }) => {
     getUserPosts();
   };
 
-  // Function to convert local datetime to ISO 8601 format with timezone
-  const toISOWithTimezone = (localDateTime, startDateTime = null) => {
+  // Convert local datetime to ISO 8601 format with timezone (preserve local time)
+  const toISOWithTimezone = (localDateTime) => {
     const date = new Date(localDateTime);
 
-    // Ensure local time comparison to prevent UTC issues
-    const localTime = date.getHours() * 60 + date.getMinutes(); // Total minutes
-    const startTime = startDateTime
-      ? new Date(startDateTime).getHours() * 60 +
-        new Date(startDateTime).getMinutes()
-      : 0;
+    // Extract date and time components
+    const year = date.getFullYear();
+    const month = String(date.getMonth() + 1).padStart(2, "0");
+    const day = String(date.getDate()).padStart(2, "0");
+    const hours = String(date.getHours()).padStart(2, "0");
+    const minutes = String(date.getMinutes()).padStart(2, "0");
 
-    // If end time is before start time, add 1 day
-    if (startDateTime && localTime < startTime) {
-      date.setDate(date.getDate() + 1);
-    }
-
-    return date.toISOString().slice(0, 19) + getTimeZoneOffset();
+    return `${year}-${month}-${day}T${hours}:${minutes}${getTimeZoneOffset()}`;
   };
 
   // Helper to get timezone offset in "+05:30" format

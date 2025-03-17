@@ -69,10 +69,10 @@ const DailySchedule = ({ currentDate, localStorageData }) => {
         currentHour,
         startTime.hour(),
         endTime.hour(),
-        interviewStartDate, currentDateFormatted,
-          interviewEndDate,
-        currentHour == startTime.hour() &&
-        currentHour == endTime.hour(),
+        interviewStartDate,
+        currentDateFormatted,
+        interviewEndDate,
+        currentHour == startTime.hour() && currentHour == endTime.hour(),
         "endTime.hour()"
       );
 
@@ -98,6 +98,26 @@ const DailySchedule = ({ currentDate, localStorageData }) => {
     return () => document.removeEventListener("click", handleClickOutside);
   }, []);
 
+  const getFillPercentage = (start, end) => {
+    const startTime = dayjs(start);
+    const endTime = dayjs(end);
+
+    // Ensure valid times
+    if (!startTime.isValid() || !endTime.isValid()) return 0;
+
+    // Calculate the duration in minutes
+    const durationMinutes = endTime.diff(startTime, "minute");
+
+    // Ensure the fill percentage does not exceed 100%
+    const fillPercentage = Math.min((durationMinutes / 60) * 100, 100);
+
+    return fillPercentage;
+  };
+
+  const calculateBackgroundFill = (start, end) => {
+    return getFillPercentage(start, end);
+  };
+
   return (
     <div className="overflow-hidden h-[600px] overflow-y-auto">
       <ul className="px-4">
@@ -108,119 +128,178 @@ const DailySchedule = ({ currentDate, localStorageData }) => {
             </div>
 
             <div className="w-4/5 h-full flex items-center border-r relative">
-              {getInterviewsForSlot(time).map(
-                (interview, idx) => (
-                  console.log(interview, "interview22222"),
-                  (
-                    <div
+              {getInterviewsForSlot(time).map((interview, idx) => (
+                <div
+                  key={interview.id}
+                  className="ms-6 relative popup-container"
+                >
+                  {interview?.user_det?.length > 1 ? (
+                    <Popover
                       key={interview.id}
-                      className="ms-6 relative popup-container"
-                    >
-                      <Popover
-                        key={interview.id}
-                        position="right"
-                        content={
-                          <div>
-                            {interview?.user_det?.map((data) => {
-                              const { formattedDate, startTime, endTime } =
-                                formatDateTime(
-                                  interview?.start,
-                                  interview?.end
-                                );
+                      position="right"
+                      content={
+                        <div>
+                          {interview?.user_det?.map((data) => {
+                            const { formattedDate, startTime, endTime } =
+                              formatDateTime(interview?.start, interview?.end);
 
-                              let props_data = {
-                                detail: data,
-                                date: formattedDate,
-                                startTime: startTime,
-                                endTime: endTime,
-                                link: interview?.link,
-                              };
-                              return (
-                                <div
-                                  key={data.id}
-                                  className="w-55 ps-3 py-3 pe-2 border shadow-md bg-white rounded-lg relative cursor-pointer"
-                                  onClick={() => {
-                                    setSelectedInterview(props_data);
-                                    setIsOpen(true);
-                                  }}
-                                >
-                                  <div className="absolute left-0 top-0 h-full w-[10px] bg-blue-500" />
-                                  <div className="flex justify-between items-center mb-2">
-                                    <h4 className="text-sm font-semibold text-black mb-0">
-                                      {data.job_id.jobRequest_Title}
-                                    </h4>
-                                    <div className="flex items-center">
-                                      <RiEdit2Fill
-                                        size={18}
-                                        cursor="pointer"
-                                        color="black"
-                                      />
-                                      <MdOutlineDeleteOutline
-                                        className="ms-2"
-                                        size={18}
-                                        cursor="pointer"
-                                        color="red"
-                                      />
-                                    </div>
-                                  </div>
-
-                                  {/* Fixed Flexbox Alignment */}
-                                  <div className="flex items-center justify-between">
-                                    <p className="text-xs text-gray-600 mb-0 truncate">
-                                      {interview?.summary}
-                                    </p>
-                                    <span className="text-xs text-gray-600 mb-0 mx-2">
-                                      |
-                                    </span>
-                                    <p className="text-xs text-gray-600 mb-0 truncate">
-                                      Interviewer: {data.handled_by.firstName}
-                                    </p>
-                                  </div>
-                                  {/* Date and Time */}
-                                  <div className="flex items-center justify-between mt-1">
-                                    <p className="text-xs text-gray-600 mb-0">
-                                      Date: {formattedDate || "N/A"}
-                                    </p>
-                                    <span className="text-xs text-gray-600 mb-0 mx-2">
-                                      |
-                                    </span>
-                                    <p className="text-xs text-gray-600 mb-0">
-                                      Time:{" "}
-                                      {startTime && endTime
-                                        ? `${startTime} - ${endTime}`
-                                        : "N/A"}
-                                    </p>
+                            let props_data = {
+                              detail: data,
+                              date: formattedDate,
+                              startTime: startTime,
+                              endTime: endTime,
+                              link: interview?.link,
+                            };
+                            return (
+                              <div
+                                key={data.id}
+                                className="w-55 ps-3 py-3 pe-2 border shadow-md bg-white rounded-lg relative cursor-pointer"
+                                onClick={() => {
+                                  setSelectedInterview(props_data);
+                                  setIsOpen(true);
+                                }}
+                              >
+                                <div className="absolute left-0 top-0 h-full w-[10px] bg-blue-500" />
+                                <div className="flex justify-between items-center mb-2">
+                                  <h4 className="text-sm font-semibold text-black mb-0">
+                                    {data.job_id.jobRequest_Title}
+                                  </h4>
+                                  <div className="flex items-center">
+                                    <RiEdit2Fill
+                                      size={18}
+                                      cursor="pointer"
+                                      color="black"
+                                    />
+                                    <MdOutlineDeleteOutline
+                                      className="ms-2"
+                                      size={18}
+                                      cursor="pointer"
+                                      color="red"
+                                    />
                                   </div>
                                 </div>
-                              );
-                            })}
-                          </div>
-                        }
-                      >
-                        <div className="w-55 ps-3 py-1 pe-2 border shadow-md bg-white rounded-lg relative cursor-pointer mt-2 text-start">
-                          <div className="absolute left-0 top-0 h-full w-[10px] bg-blue-500" />
-                          {interview?.user_det?.length > 0 && (
-                            <div className="absolute -top-2 -right-1 h-5 w-5 rounded-full bg-[#FFA500] flex items-center justify-center text-black text-[10px] font-semibold">
-                              {interview?.user_det?.length}
-                            </div>
-                          )}
-                          <div className="text-[12px] font-semibold mb-1">
-                            {interview?.job_id?.jobRequest_Title}
-                          </div>
-                          <div className="text-[12px] text-gray-600 mb-1">
-                            Interviewer:
-                            {interview?.user_det?.[0]?.handled_by?.firstName}
-                          </div>
-                          <div className="text-[12px] text-gray-600 mb-1">
-                            Time: {dayjs(interview.start).format("hh:mm A")} -{" "}
-                            {dayjs(interview.end).format("hh:mm A")}
-                          </div>
+
+                                {/* Fixed Flexbox Alignment */}
+                                <div className="flex items-center justify-between">
+                                  <p className="text-xs text-gray-600 mb-0 truncate">
+                                    {interview?.summary}
+                                  </p>
+                                  <span className="text-xs text-gray-600 mb-0 mx-2">
+                                    |
+                                  </span>
+                                  <p className="text-xs text-gray-600 mb-0 truncate">
+                                    Interviewer: {data.handled_by.firstName}
+                                  </p>
+                                </div>
+                                {/* Date and Time */}
+                                <div className="flex items-center justify-between mt-1">
+                                  <p className="text-xs text-gray-600 mb-0">
+                                    Date: {formattedDate || "N/A"}
+                                  </p>
+                                  <span className="text-xs text-gray-600 mb-0 mx-2">
+                                    |
+                                  </span>
+                                  <p className="text-xs text-gray-600 mb-0">
+                                    Time:{" "}
+                                    {startTime && endTime
+                                      ? `${startTime} - ${endTime}`
+                                      : "N/A"}
+                                  </p>
+                                </div>
+                              </div>
+                            );
+                          })}
                         </div>
-                      </Popover>
+                      }
+                    >
+                      <div className="w-55 ps-3 py-1 pe-2 border shadow-md bg-white rounded-lg relative cursor-pointer mt-2 text-start">
+                        <div className="z-10 absolute left-0 top-0 h-full w-[10px] bg-blue-500" />
+                        <div
+                          className="absolute left-0 bottom-0 w-full bg-blue-300"
+                          style={{
+                            height: `${calculateBackgroundFill(
+                              interview?.start,
+                              interview?.end
+                            )}%`,
+                            borderBottomRightRadius: "8px",
+                            borderTopRightRadius:
+                              calculateBackgroundFill(
+                                interview?.start,
+                                interview?.end
+                              ) === 100
+                                ? "8px"
+                                : "0px",
+                          }}
+                        />
+                        {interview?.user_det?.length > 0 && (
+                          <div className="absolute -top-2 -right-1 h-5 w-5 rounded-full bg-[#FFA500] flex items-center justify-center text-black text-[10px] font-semibold">
+                            {interview?.user_det?.length}
+                          </div>
+                        )}
+                        <div className="relative z-10 text-[12px] font-semibold mb-1">
+                          {interview?.job_id?.jobRequest_Title}
+                        </div>
+                        <div className="relative z-10 text-[12px] text-gray-600 mb-1">
+                          Interviewer:
+                          {interview?.user_det?.[0]?.handled_by?.firstName}
+                        </div>
+                        <div className="relative z-10 text-[12px] text-gray-600 mb-1">
+                          Time: {dayjs(interview.start).format("hh:mm A")} -{" "}
+                          {dayjs(interview.end).format("hh:mm A")}
+                        </div>
+                      </div>
+                    </Popover>
+                  ) : (
+                    <div
+                      className="w-55 ps-3 py-1 pe-2 border shadow-md bg-white rounded-lg relative cursor-pointer mt-2 text-start"
+                      onClick={() => {
+                        const { formattedDate, startTime, endTime } =
+                          formatDateTime(interview?.start, interview?.end);
+
+                        let props_data = {
+                          detail: interview?.user_det?.[0],
+                          date: formattedDate,
+                          startTime: startTime,
+                          endTime: endTime,
+                          link: interview?.link,
+                        };
+                        setSelectedInterview(props_data);
+                        setIsOpen(true);
+                      }}
+                    >
+                      <div className="z-10 absolute left-0 top-0 h-full w-[10px] bg-blue-500" />
+                      <div
+                        className="absolute left-0 bottom-0 w-full bg-blue-300"
+                        style={{
+                          height: `${calculateBackgroundFill(
+                            interview?.start,
+                            interview?.end
+                          )}%`,
+                          borderBottomRightRadius: "8px",
+                          borderTopRightRadius:
+                            calculateBackgroundFill(
+                              interview?.start,
+                              interview?.end
+                            ) === 100
+                              ? "8px"
+                              : "0px",
+                        }}
+                      />
+                      <div className="relative z-10 text-[12px] font-semibold mb-1">
+                        {interview?.job_id?.jobRequest_Title}
+                      </div>
+                      <div className="relative z-10 text-[12px] text-gray-600 mb-1">
+                        Interviewer:
+                        {interview?.user_det?.[0]?.handled_by?.firstName}
+                      </div>
+                      <div className="relative z-10 text-[12px] text-gray-600 mb-1">
+                        Time: {dayjs(interview.start).format("hh:mm A")} -{" "}
+                        {dayjs(interview.end).format("hh:mm A")}
+                      </div>
                     </div>
-                  )
-                )
-              )}
+                  )}
+                </div>
+              ))}
             </div>
           </li>
         ))}
