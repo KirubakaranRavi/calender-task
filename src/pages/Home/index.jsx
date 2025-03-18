@@ -133,6 +133,9 @@ const Index = () => {
               className="text-gray-500 transition-colors group-hover:text-black"
             />
           </motion.div>
+          <div className="w-12 h-10 flex items-center justify-center bg-white shadow-lg rounded-lg ms-4 text-blue-500">
+            {new Date().getDate()}
+          </div>
         </div>
 
         {/* Center Date Display */}

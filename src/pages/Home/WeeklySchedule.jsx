@@ -95,37 +95,6 @@ const WeeklySchedule = ({ currentDate, localStorageData, getUserPosts }) => {
     getUserPosts();
   };
 
-  const InterviewCard = ({ interview, onClick }) => {
-    const { formattedDate, startTime, endTime } = formatDateTime(
-      interview?.start,
-      interview?.end
-    );
-
-    return (
-      <div
-        className="w-55 ps-3 py-1 pe-2 border shadow-md bg-white rounded-lg relative cursor-pointer mt-2 text-start"
-        onClick={onClick}
-      >
-        <div className="absolute left-0 top-0 h-full w-[10px] bg-blue-500" />
-        {interview?.user_det?.length > 0 && (
-          <div className="absolute -top-2 -right-1 h-5 w-5 rounded-full bg-[#FFA500] flex items-center justify-center text-black text-[10px] font-semibold">
-            {interview?.user_det?.length}
-          </div>
-        )}
-        <div className="text-[12px] font-semibold mb-1">
-          {interview?.job_id?.jobRequest_Title || "N/A"}
-        </div>
-        <div className="text-[12px] text-gray-600 mb-1">
-          Interviewer:{" "}
-          {interview?.user_det?.[0]?.handled_by?.firstName || "N/A"}
-        </div>
-        <div className="text-[12px] text-gray-600 mb-1">
-          Time: {startTime} - {endTime}
-        </div>
-      </div>
-    );
-  };
-
   const getFillPercentage = (start, end) => {
     const startTime = dayjs(start);
     const endTime = dayjs(end);
@@ -180,6 +149,10 @@ const WeeklySchedule = ({ currentDate, localStorageData, getUserPosts }) => {
                   interview?.user_det?.length > 1 ? (
                     <Popover
                       key={interview.id}
+                      height={`${calculateBackgroundFill(
+                        interview?.start,
+                        interview?.end
+                      )}%`}
                       position={
                         weekDays[dayIndex] === "Sunday" ||
                         weekDays[dayIndex] === "Saturday"
@@ -262,38 +235,59 @@ const WeeklySchedule = ({ currentDate, localStorageData, getUserPosts }) => {
                         </div>
                       }
                     >
-                      <div className="w-55 ps-3 py-1 pe-2 border shadow-md bg-white rounded-lg relative cursor-pointer mt-2 text-start">
-                        <div className="z-10 absolute left-0 top-0 h-full w-[10px] bg-blue-500" />
-                        <div
-                          className="absolute left-0 bottom-0 w-full bg-blue-300"
-                          style={{
-                            height: `${calculateBackgroundFill(
+                      <div
+                        className="w-55 ps-3 py-1 pe-2 border shadow-md bg-white rounded-lg relative cursor-pointer text-start"
+                        style={{
+                          height: "100%",
+                          fontSize:
+                            calculateBackgroundFill(
                               interview?.start,
                               interview?.end
-                            )}%`,
-                            borderBottomRightRadius: "8px",
-                            borderTopRightRadius:
-                              calculateBackgroundFill(
-                                interview?.start,
-                                interview?.end
-                              ) === 100
-                                ? "8px"
-                                : "0px",
-                          }}
-                        />
+                            ) > 90
+                              ? "12px"
+                              : calculateBackgroundFill(
+                                  interview?.start,
+                                  interview?.end
+                                ) < 35
+                              ? "8px"
+                              : "10px",
+                          lineHeight:
+                            calculateBackgroundFill(
+                              interview?.start,
+                              interview?.end
+                            ) > 90
+                              ? "20px"
+                              : calculateBackgroundFill(
+                                  interview?.start,
+                                  interview?.end
+                                ) < 35
+                              ? "10px"
+                              : calculateBackgroundFill(
+                                  interview?.start,
+                                  interview?.end
+                                ) > 80
+                              ? "20px"
+                              : "15px",
+                          display: "flex",
+                          flexDirection: "column",
+                          justifyContent: "center",
+                          alignItems: "start",
+                        }}
+                      >
+                        <div className="z-10 absolute left-0 top-0 h-full w-[10px] bg-blue-500" />
                         {interview?.user_det?.length > 0 && (
                           <div className="absolute -top-2 -right-1 h-5 w-5 rounded-full bg-[#FFA500] flex items-center justify-center text-black text-[10px] font-semibold">
                             {interview?.user_det?.length}
                           </div>
                         )}
-                        <div className="relative z-10 text-[12px] font-semibold mb-1">
+                        <div className="relative z-10 font-semibold mb-0">
                           {interview?.job_id?.jobRequest_Title}
                         </div>
-                        <div className="relative z-10 text-[12px] text-gray-600 mb-1">
+                        <div className="relative z-10 text-gray-600 mb-0">
                           Interviewer:{" "}
                           {interview?.user_det?.[0]?.handled_by?.firstName}
                         </div>
-                        <div className="relative z-10 text-[12px] text-gray-600 mb-1">
+                        <div className="relative z-10 text-gray-600 mb-0">
                           Time: {dayjs(interview.start).format("hh:mm A")} -{" "}
                           {dayjs(interview.end).format("hh:mm A")}
                         </div>
@@ -301,7 +295,7 @@ const WeeklySchedule = ({ currentDate, localStorageData, getUserPosts }) => {
                     </Popover>
                   ) : (
                     <div
-                      className="w-55 ps-3 py-1 pe-2 border shadow-md bg-white rounded-lg relative cursor-pointer mt-2 text-start"
+                      className="w-55 ps-3 py-1 pe-2 border shadow-md bg-white rounded-lg relative cursor-pointer text-start"
                       onClick={() => {
                         const { formattedDate, startTime, endTime } =
                           formatDateTime(interview?.start, interview?.end);
@@ -316,34 +310,55 @@ const WeeklySchedule = ({ currentDate, localStorageData, getUserPosts }) => {
                         setSelectedInterview(props_data);
                         setIsOpen(true);
                       }}
-                    >
-                      <div className="absolute z-10 left-0 top-0 h-full w-[10px] bg-blue-500" />
-                      <div
-                        className="absolute left-0 bottom-0 w-full bg-blue-300"
-                        style={{
-                          height: `${calculateBackgroundFill(
+                      style={{
+                        height: `${calculateBackgroundFill(
+                          interview?.start,
+                          interview?.end
+                        )}%`,
+                        display: "flex",
+                        flexDirection: "column",
+                        justifyContent: "center",
+                        alignItems: "start",
+                        fontSize:
+                          calculateBackgroundFill(
                             interview?.start,
                             interview?.end
-                          )}%`,
-                          borderBottomRightRadius: "8px",
-                          borderTopRightRadius: "8px",
-                          borderTopRightRadius:
-                            calculateBackgroundFill(
-                              interview?.start,
-                              interview?.end
-                            ) === 100
-                              ? "8px"
-                              : "0px",
-                        }}
-                      />
-                      <div className="relative z-10 text-[12px] font-semibold mb-1">
+                          ) > 90
+                            ? "12px"
+                            : calculateBackgroundFill(
+                                interview?.start,
+                                interview?.end
+                              ) < 35
+                            ? "8px"
+                            : "10px",
+                        lineHeight:
+                          calculateBackgroundFill(
+                            interview?.start,
+                            interview?.end
+                          ) > 90
+                            ? "20px"
+                            : calculateBackgroundFill(
+                                interview?.start,
+                                interview?.end
+                              ) < 35
+                            ? "10px"
+                            : calculateBackgroundFill(
+                                interview?.start,
+                                interview?.end
+                              ) > 80
+                            ? "20px"
+                            : "15px",
+                      }}
+                    >
+                      <div className="absolute z-10 left-0 top-0 h-full w-[10px] bg-blue-500" />
+                      <div className="font-semibold mb-">
                         {interview?.job_id?.jobRequest_Title}
                       </div>
-                      <div className="relative z-10 text-[12px] text-gray-600 mb-1">
+                      <div className="text-gray-600 mb-0">
                         Interviewer:{" "}
                         {interview?.user_det?.[0]?.handled_by?.firstName}
                       </div>
-                      <div className="relative z-10 text-[12px] text-gray-600 mb-1">
+                      <div className="text-gray-600 mb-0">
                         Time: {dayjs(interview.start).format("hh:mm A")} -{" "}
                         {dayjs(interview.end).format("hh:mm A")}
                       </div>

@@ -4,6 +4,7 @@ export const Popover = ({
   children,
   content,
   position: propPosition = "left",
+  height = "100%",
 }) => {
   const [isOpen, setIsOpen] = useState(false);
   const [position, setPosition] = useState(propPosition);
@@ -44,8 +45,13 @@ export const Popover = ({
   };
 
   return (
-    <div className="relative" ref={popoverRef}>
-      <button ref={buttonRef} onClick={togglePopover}>
+    <div className="relative h-full" ref={popoverRef}>
+      <button
+        ref={buttonRef}
+        onClick={togglePopover}
+        className="w-full"
+        style={{ height }}
+      >
         {children}
       </button>
 

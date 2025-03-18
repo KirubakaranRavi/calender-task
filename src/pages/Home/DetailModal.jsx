@@ -4,6 +4,7 @@ import { FiDownload } from "react-icons/fi";
 import { FaVideo } from "react-icons/fa";
 import React, { useEffect, useRef } from "react";
 import { motion, AnimatePresence } from "framer-motion";
+import Meet from "../../assets/png/meet.png";
 
 const InterviewModal = ({ isOpen, closeModal, interviewDetails = {} }) => {
   const modalRef = useRef(null);
@@ -107,7 +108,7 @@ const InterviewModal = ({ isOpen, closeModal, interviewDetails = {} }) => {
 
               <div className="w-1/2 p-4 flex flex-col items-center justify-center">
                 <div className="border border-grey-500 rounded-md p-3 mb-6">
-                  <FaVideo size={80} className="text-blue-500" />
+                  <img src={Meet} alt="google meet" style={{width: "80px"}}/>
                 </div>
                 <a
                   href={link}

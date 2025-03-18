@@ -158,11 +158,11 @@ const Header = ({ getUserPosts }) => {
 
   return (
     <>
-      <div className="flex justify-between items-center w-full px-5 mb-3 bg-gradient-to-r from-blue-500 to-indigo-600 text-white rounded-lg shadow-lg py-3 hover:shadow-xl transition-shadow duration-300">
+      <div className="flex justify-between items-center w-full px-5 my-3">
         <p className="mb-0 text-lg font-semibold">Kiruba's Todo List</p>
         <button
           onClick={toggleModal}
-          className="bg-white text-indigo-600 px-4 py-2 rounded-lg shadow flex items-center gap-2 group"
+          className="bg-white text-indigo-600 px-4 py-2 rounded-lg shadow flex items-center gap-2 group transition-transform duration-300 hover:scale-105"
         >
           <AiOutlinePlus className="text-xl" /> Create Schedule
         </button>

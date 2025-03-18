@@ -214,7 +214,7 @@ const MonthlyCalendar = ({ currentDate, localStorageData, getUserPosts }) => {
                     >
                       <div className="w-55 ps-3 py-1 pe-2 border shadow-md bg-white rounded-lg relative cursor-pointer mt-2 text-start">
                         <div className="z-10 absolute left-0 top-0 h-full w-[10px] bg-blue-500" />
-                        <div
+                        {/* <div
                           className="absolute left-0 bottom-0 w-full bg-blue-300"
                           style={{
                             height: `${calculateBackgroundFill(
@@ -230,7 +230,7 @@ const MonthlyCalendar = ({ currentDate, localStorageData, getUserPosts }) => {
                                 ? "8px"
                                 : "0px",
                           }}
-                        />
+                        /> */}
                         {interview?.user_det?.length > 0 && (
                           <div className="absolute -top-2 -right-1 h-5 w-5 rounded-full bg-[#FFA500] flex items-center justify-center text-black text-[10px] font-semibold">
                             {interview?.user_det?.length}
@@ -269,7 +269,7 @@ const MonthlyCalendar = ({ currentDate, localStorageData, getUserPosts }) => {
                     }}
                   >
                     <div className="z-10 absolute left-0 top-0 h-full w-[10px] bg-blue-500" />{" "}
-                    <div
+                    {/* <div
                       className="absolute left-0 bottom-0 w-full bg-blue-300"
                       style={{
                         height: `${calculateBackgroundFill(
@@ -285,7 +285,7 @@ const MonthlyCalendar = ({ currentDate, localStorageData, getUserPosts }) => {
                             ? "8px"
                             : "0px",
                       }}
-                    />
+                    /> */}
                     <div className="relative z-10 text-[12px] font-semibold mb-1">
                       {interview?.job_id?.jobRequest_Title}
                     </div>
